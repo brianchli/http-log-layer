@@ -1,15 +1,27 @@
 use tower::Layer;
 
 #[derive(Clone, Copy)]
-pub struct HttpLogLayer;
+pub struct HttpLogLayer {
+    config: Config,
+}
 
 #[derive(Clone, Copy)]
 pub struct LogService<S> {
     inner: S,
 }
-impl HttpLogLayer {
-    pub fn new() -> Self {
+
+#[derive(Clone, Copy)]
+pub struct Config {}
+
+impl Config {
+    pub fn builder() -> Self {
         Self {}
+    }
+}
+
+impl HttpLogLayer {
+    pub fn new(config: Config) -> Self {
+        Self { config }
     }
 }
 
@@ -40,7 +52,7 @@ where
 
     fn call(&mut self, request: hyper::Request<hyper::body::Incoming>) -> Self::Future {
         let (parts, body) = request.into_parts();
-        dbg!(&parts);
+        dbg!("access by ", &parts.headers.get("x-real_ip").unwrap());
         self.inner.call(hyper::Request::from_parts(parts, body))
     }
 }
