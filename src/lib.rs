@@ -52,7 +52,7 @@ where
 
     fn call(&mut self, request: hyper::Request<hyper::body::Incoming>) -> Self::Future {
         let (parts, body) = request.into_parts();
-        dbg!("access by ", &parts.headers.get("x-real_ip").unwrap());
+        println!("access by {:?}", &parts.headers.get("x-client-ip").unwrap());
         self.inner.call(hyper::Request::from_parts(parts, body))
     }
 }
