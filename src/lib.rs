@@ -33,11 +33,11 @@ impl<S> Layer<S> for HttpLogLayer {
     }
 }
 
-type Req = hyper::Request<hyper::body::Incoming>;
-
-impl<S> tower::Service<Req> for LogService<S>
+type Req<Body> = hyper::Request<Body>;
+impl<S, B> tower::Service<Req<B>> for LogService<S>
 where
-    S: tower::Service<Req> + Clone,
+    S: tower::Service<Req<B>> + Clone,
+    B: hyper::body::Body,
 {
     type Response = S::Response;
     type Error = S::Error;
@@ -50,7 +50,7 @@ where
         self.inner.poll_ready(cx)
     }
 
-    fn call(&mut self, request: hyper::Request<hyper::body::Incoming>) -> Self::Future {
+    fn call(&mut self, request: Req<B>) -> Self::Future {
         let (parts, body) = request.into_parts();
         println!("access by {:?}", &parts.headers.get("x-client-ip").unwrap());
         self.inner.call(hyper::Request::from_parts(parts, body))
