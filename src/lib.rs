@@ -5,6 +5,7 @@ use crate::future::LoggingFuture;
 
 use http_body_util::combinators::BoxBody;
 use hyper::body::Bytes;
+use tracing::info;
 use std::error::Error;
 use std::fmt::Debug;
 use tower::Layer;
@@ -54,6 +55,8 @@ where
     }
 
     fn call(&mut self, request: Req<B>) -> Self::Future {
-        LoggingFuture::new(self.inner.call(request))
+        let (parts, body) = request.into_parts();
+        info!("{:?}", &parts);
+        LoggingFuture::new(self.inner.call(hyper::Request::from_parts(parts, body)))
     }
 }
